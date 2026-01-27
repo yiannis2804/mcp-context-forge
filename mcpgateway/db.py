@@ -287,7 +287,7 @@ if backend == "sqlite":
         """
         cursor = dbapi_conn.cursor()
         # Enable WAL mode for better concurrency
-        cursor.execute("PRAGMA journal_mode=DELETE")
+        cursor.execute("PRAGMA journal_mode=WAL")
         # Configure SQLite lock wait upper bound (ms) to prevent prolonged blocking under contention
         cursor.execute(f"PRAGMA busy_timeout={settings.db_sqlite_busy_timeout}")
         # Synchronous=NORMAL is safe with WAL mode and improves performance
