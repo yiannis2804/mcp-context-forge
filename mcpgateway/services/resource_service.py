@@ -331,7 +331,21 @@ class ResourceService:
         else:
             resource_dict["metrics"] = None
 
-        resource_dict["tags"] = resource.tags or []
+        raw_tags = resource.tags or []
+        normalized_tags = []
+        for tag in raw_tags:
+            if isinstance(tag, str):
+                normalized_tags.append(tag)
+                continue
+            if isinstance(tag, dict):
+                label = tag.get("label") or tag.get("name")
+                if label:
+                    normalized_tags.append(label)
+                continue
+            label = getattr(tag, "label", None) or getattr(tag, "name", None)
+            if label:
+                normalized_tags.append(label)
+        resource_dict["tags"] = normalized_tags
         resource_dict["team"] = getattr(resource, "team", None)
 
         # Include metadata fields for proper API response
@@ -3494,3 +3508,28 @@ class ResourceService:
 
         metrics_cache.invalidate("resources")
         metrics_cache.invalidate_prefix("top_resources:")
+
+
+# Lazy singleton - created on first access, not at module import time.
+# This avoids instantiation when only exception classes are imported.
+_resource_service_instance = None  # pylint: disable=invalid-name
+
+
+def __getattr__(name: str):
+    """Module-level __getattr__ for lazy singleton creation.
+
+    Args:
+        name: The attribute name being accessed.
+
+    Returns:
+        The resource_service singleton instance if name is "resource_service".
+
+    Raises:
+        AttributeError: If the attribute name is not "resource_service".
+    """
+    global _resource_service_instance  # pylint: disable=global-statement
+    if name == "resource_service":
+        if _resource_service_instance is None:
+            _resource_service_instance = ResourceService()
+        return _resource_service_instance
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")

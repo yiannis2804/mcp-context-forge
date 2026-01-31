@@ -1352,9 +1352,9 @@ class ToolInvocation(BaseModelWithConfigDict):
     - Arguments matching tool's input schema (validated for depth limits)
 
     Validation Rules:
-    - Tool names must start with a letter and contain only letters, numbers,
-      underscores, and hyphens
-    - Tool names cannot contain HTML special characters (<, >, ", ', /)
+    - Tool names must start with a letter, number, or underscore and contain only
+      letters, numbers, periods, underscores, hyphens, and slashes (per SEP-986)
+    - Tool names cannot contain HTML special characters (<, >, ", ')
     - Arguments are validated to prevent excessively deep nesting (default max: 10 levels)
 
     Attributes:
@@ -1390,12 +1390,22 @@ class ToolInvocation(BaseModelWithConfigDict):
         ...     print("Validation failed: HTML tags not allowed")
         Validation failed: HTML tags not allowed
 
-        >>> # Invalid: Tool name starting with number
+        >>> # Valid: Tool name starting with number (per MCP spec)
+        >>> tool_num = ToolInvocation(name="123_tool", arguments={})
+        >>> tool_num.name
+        '123_tool'
+
+        >>> # Valid: Tool name starting with underscore (per MCP spec)
+        >>> tool_underscore = ToolInvocation(name="_5gpt_query", arguments={})
+        >>> tool_underscore.name
+        '_5gpt_query'
+
+        >>> # Invalid: Tool name starting with hyphen
         >>> try:
-        ...     ToolInvocation(name="123_tool", arguments={})
+        ...     ToolInvocation(name="-invalid_tool", arguments={})
         ... except ValidationError as e:
-        ...     print("Validation failed: Must start with letter")
-        Validation failed: Must start with letter
+        ...     print("Validation failed: Must start with letter, number, or underscore")
+        Validation failed: Must start with letter, number, or underscore
 
         >>> # Valid: Complex but not too deep arguments
         >>> args = {"level1": {"level2": {"level3": {"data": "value"}}}}
@@ -1802,7 +1812,7 @@ class ResourceRead(BaseModelWithConfigDict):
     updated_at: datetime
     enabled: bool
     metrics: Optional[ResourceMetrics] = Field(None, description="Resource metrics (may be None in list operations)")
-    tags: List[Dict[str, str]] = Field(default_factory=list, description="Tags for categorizing the resource")
+    tags: List[str] = Field(default_factory=list, description="Tags for categorizing the resource")
 
     # Comprehensive metadata for audit tracking
     created_by: Optional[str] = Field(None, description="Username who created this entity")
@@ -6869,7 +6879,7 @@ class GrpcServiceRead(BaseModel):
     last_reflection: Optional[datetime] = Field(None, description="Last reflection timestamp")
 
     # Tags
-    tags: List[Dict[str, str]] = Field(default_factory=list, description="Service tags")
+    tags: List[str] = Field(default_factory=list, description="Service tags")
 
     # Timestamps
     created_at: datetime = Field(..., description="Creation timestamp")

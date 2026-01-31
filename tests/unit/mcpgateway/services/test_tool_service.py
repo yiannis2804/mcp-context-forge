@@ -11,6 +11,7 @@ Tests for tool service implementation.
 import base64
 import asyncio
 from contextlib import asynccontextmanager
+from datetime import datetime, timezone
 import logging
 from unittest.mock import ANY, AsyncMock, MagicMock, Mock, patch
 
@@ -366,6 +367,23 @@ class TestToolService:
         # Test with include_auth=False
         tool_read = tool_service.convert_tool_to_read(mock_tool, include_auth=False)
         assert tool_read.auth is None
+
+    @pytest.mark.asyncio
+    async def test_convert_tool_to_read_includes_metrics(self, tool_service, mock_tool):
+        """Verify include_metrics populates metrics and execution_count."""
+        mock_tool.metrics_summary = {
+            "total_executions": 3,
+            "successful_executions": 2,
+            "failed_executions": 1,
+            "failure_rate": 0.333,
+            "min_response_time": 0.1,
+            "max_response_time": 1.0,
+            "avg_response_time": 0.5,
+            "last_execution_time": datetime.now(timezone.utc),
+        }
+        tool_read = tool_service.convert_tool_to_read(mock_tool, include_metrics=True, include_auth=False)
+        assert tool_read.metrics.total_executions == 3
+        assert tool_read.execution_count == 3
 
     @pytest.mark.asyncio
     async def test_register_tool(self, tool_service, mock_tool, test_db):
@@ -3469,3 +3487,126 @@ class TestToolListingGracefulErrorHandling:
         # Verify the error was logged
         assert "Failed to convert tool 2" in caplog.text
         assert "bad-tool" in caplog.text
+
+
+# ---------------------------------------------------------------------------
+# AnyUrl Serialization Tests (PR #2517 - Issue #2512)
+# ---------------------------------------------------------------------------
+
+
+class TestAnyUrlSerialization:
+    """Tests for AnyUrl serialization fix (mode='json' in model_dump).
+
+    The root cause of Issue #2512 was that AnyUrl fields were not being
+    serialized to strings when dumping tool results. This caused validation
+    errors when the content was passed to MCP SDK types.
+
+    The fix adds mode='json' to model_dump() calls, which ensures AnyUrl
+    objects are serialized to strings.
+    """
+
+    def test_anyurl_serialization_without_mode_json(self):
+        """Demonstrate that AnyUrl stays as object without mode='json'."""
+        # Third-Party
+        from pydantic import AnyUrl, BaseModel
+
+        class TestModel(BaseModel):
+            uri: AnyUrl
+            name: str
+
+        model = TestModel(uri="https://example.com/file.txt", name="test")
+
+        # Without mode="json", AnyUrl remains as AnyUrl object
+        dump = model.model_dump(by_alias=True)
+        assert not isinstance(dump["uri"], str)
+        assert isinstance(dump["uri"], AnyUrl)
+
+    def test_anyurl_serialization_with_mode_json(self):
+        """Verify that AnyUrl is serialized to string with mode='json'."""
+        # Third-Party
+        from pydantic import AnyUrl, BaseModel
+
+        class TestModel(BaseModel):
+            uri: AnyUrl
+            name: str
+
+        model = TestModel(uri="https://example.com/file.txt", name="test")
+
+        # With mode="json", AnyUrl is serialized to string (the fix)
+        dump = model.model_dump(by_alias=True, mode="json")
+        assert isinstance(dump["uri"], str)
+        assert dump["uri"] == "https://example.com/file.txt"
+
+    def test_resource_link_anyurl_serialization(self):
+        """Verify ResourceLink uri field is serialized correctly with mode='json'."""
+        # First-Party
+        from mcpgateway.common.models import ResourceLink
+
+        resource_link = ResourceLink(
+            type="resource_link",
+            uri="s3://bucket/path/to/file.bin",
+            name="file.bin",
+            description="A binary file",
+            mime_type="application/octet-stream",
+            size=1024,
+        )
+
+        # This is what the tool_service fix does (line 3192)
+        dump = resource_link.model_dump(by_alias=True, mode="json")
+
+        # uri should be a string, not an AnyUrl object
+        assert isinstance(dump["uri"], str)
+        assert dump["uri"] == "s3://bucket/path/to/file.bin"
+        assert dump["type"] == "resource_link"
+        assert dump["name"] == "file.bin"
+        assert dump["size"] == 1024
+
+    def test_tool_result_with_resource_link_serialization(self):
+        """Verify ToolResult containing ResourceLink serializes AnyUrl correctly."""
+        # First-Party
+        from mcpgateway.common.models import ResourceLink
+
+        resource_link = ResourceLink(
+            type="resource_link",
+            uri="https://cdn.example.com/assets/image.png",
+            name="image.png",
+            mime_type="image/png",
+            size=2048,
+        )
+
+        tool_result = ToolResult(content=[resource_link], is_error=False)
+
+        # This is what the tool_service fix does (line 3192)
+        dump = tool_result.model_dump(by_alias=True, mode="json")
+
+        # Verify the uri in content is a string
+        assert len(dump["content"]) == 1
+        assert isinstance(dump["content"][0]["uri"], str)
+        assert dump["content"][0]["uri"] == "https://cdn.example.com/assets/image.png"
+        assert dump["content"][0]["type"] == "resource_link"
+
+    def test_mixed_content_with_anyurl_serialization(self):
+        """Verify mixed content types with AnyUrl fields serialize correctly."""
+        # First-Party
+        from mcpgateway.common.models import ResourceLink
+
+        resource_link = ResourceLink(
+            type="resource_link",
+            uri="file:///path/to/document.pdf",
+            name="document.pdf",
+            mime_type="application/pdf",
+        )
+
+        text_content = TextContent(type="text", text="Hello world")
+        tool_result = ToolResult(content=[text_content, resource_link], is_error=False)
+
+        # This is what the tool_service fix does (line 3192)
+        dump = tool_result.model_dump(by_alias=True, mode="json")
+
+        # Verify both content items
+        assert len(dump["content"]) == 2
+        assert dump["content"][0]["type"] == "text"
+        assert dump["content"][0]["text"] == "Hello world"
+        assert dump["content"][1]["type"] == "resource_link"
+        assert isinstance(dump["content"][1]["uri"], str)
+        assert dump["content"][1]["uri"] == "file:///path/to/document.pdf"
