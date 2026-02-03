@@ -19,6 +19,7 @@ from sqlalchemy.orm import Session
 # First-Party
 from mcpgateway.db import get_db
 from mcpgateway.middleware.rbac import get_current_user_with_permissions, require_permission
+from mcpgateway.services.policy_engine import require_permission_v2  # Phase 1 - #2019
 from mcpgateway.schemas import TokenCreateRequest, TokenCreateResponse, TokenListResponse, TokenResponse, TokenRevokeRequest, TokenUpdateRequest, TokenUsageStatsResponse
 from mcpgateway.services.permission_service import PermissionService
 from mcpgateway.services.token_catalog_service import TokenCatalogService, TokenScope
@@ -106,7 +107,7 @@ async def _get_caller_permissions(
 
 
 @router.post("", response_model=TokenCreateResponse, status_code=status.HTTP_201_CREATED)
-@require_permission("tokens.create")
+@require_permission_v2("tokens.create")
 async def create_token(
     request: TokenCreateRequest,
     current_user=Depends(get_current_user_with_permissions),
@@ -190,7 +191,7 @@ async def create_token(
 
 
 @router.get("", response_model=TokenListResponse)
-@require_permission("tokens.read")
+@require_permission_v2("tokens.read")
 async def list_tokens(
     include_inactive: bool = False,
     limit: int = 50,
@@ -258,7 +259,7 @@ async def list_tokens(
 
 
 @router.get("/{token_id}", response_model=TokenResponse)
-@require_permission("tokens.read")
+@require_permission_v2("tokens.read")
 async def get_token(
     token_id: str,
     current_user=Depends(get_current_user_with_permissions),
@@ -310,7 +311,7 @@ async def get_token(
 
 
 @router.put("/{token_id}", response_model=TokenResponse)
-@require_permission("tokens.update")
+@require_permission_v2("tokens.update")
 async def update_token(
     token_id: str,
     request: TokenUpdateRequest,
@@ -392,7 +393,7 @@ async def update_token(
 
 
 @router.delete("/{token_id}", status_code=status.HTTP_204_NO_CONTENT)
-@require_permission("tokens.revoke")
+@require_permission_v2("tokens.revoke")
 async def revoke_token(
     token_id: str,
     request: Optional[TokenRevokeRequest] = None,
@@ -428,7 +429,7 @@ async def revoke_token(
 
 
 @router.get("/{token_id}/usage", response_model=TokenUsageStatsResponse)
-@require_permission("tokens.read")
+@require_permission_v2("tokens.read")
 async def get_token_usage_stats(
     token_id: str,
     days: int = 30,
@@ -581,7 +582,7 @@ async def admin_revoke_token(
 
 # Team-based token endpoints
 @router.post("/teams/{team_id}", response_model=TokenCreateResponse, status_code=status.HTTP_201_CREATED)
-@require_permission("tokens.create")
+@require_permission_v2("tokens.create")
 async def create_team_token(
     team_id: str,
     request: TokenCreateRequest,
@@ -662,7 +663,7 @@ async def create_team_token(
 
 
 @router.get("/teams/{team_id}", response_model=TokenListResponse)
-@require_permission("tokens.read")
+@require_permission_v2("tokens.read")
 async def list_team_tokens(
     team_id: str,
     include_inactive: bool = False,

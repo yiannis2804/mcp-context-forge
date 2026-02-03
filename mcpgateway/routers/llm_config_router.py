@@ -30,6 +30,7 @@ from mcpgateway.llm_schemas import (
     ProviderHealthCheck,
 )
 from mcpgateway.middleware.rbac import get_current_user_with_permissions, require_permission
+from mcpgateway.services.policy_engine import require_permission_v2  # Phase 1 - #2019
 from mcpgateway.services.llm_provider_service import (
     LLMModelConflictError,
     LLMModelNotFoundError,
@@ -62,7 +63,7 @@ llm_provider_service = LLMProviderService()
     summary="Create LLM Provider",
     description="Create a new LLM provider configuration.",
 )
-@require_permission("admin.system_config")
+@require_permission_v2("admin.system_config")
 async def create_provider(
     provider_data: LLMProviderCreate,
     current_user_ctx: dict = Depends(get_current_user_with_permissions),
@@ -104,7 +105,7 @@ async def create_provider(
     summary="List LLM Providers",
     description="List all configured LLM providers.",
 )
-@require_permission("admin.system_config")
+@require_permission_v2("admin.system_config")
 async def list_providers(
     enabled_only: bool = Query(False, description="Only return enabled providers"),
     page: int = Query(1, ge=1, description="Page number"),
@@ -146,7 +147,7 @@ async def list_providers(
     summary="Get LLM Provider",
     description="Get a specific LLM provider by ID.",
 )
-@require_permission("admin.system_config")
+@require_permission_v2("admin.system_config")
 async def get_provider(
     provider_id: str,
     current_user_ctx: dict = Depends(get_current_user_with_permissions),
@@ -178,7 +179,7 @@ async def get_provider(
     summary="Update LLM Provider",
     description="Update an existing LLM provider.",
 )
-@require_permission("admin.system_config")
+@require_permission_v2("admin.system_config")
 async def update_provider(
     provider_id: str,
     provider_data: LLMProviderUpdate,
@@ -219,7 +220,7 @@ async def update_provider(
     summary="Delete LLM Provider",
     description="Delete an LLM provider and all its models.",
 )
-@require_permission("admin.system_config")
+@require_permission_v2("admin.system_config")
 async def delete_provider(
     provider_id: str,
     current_user_ctx: dict = Depends(get_current_user_with_permissions),
@@ -246,7 +247,7 @@ async def delete_provider(
     summary="Set LLM Provider State",
     description="Set the enabled status of an LLM provider.",
 )
-@require_permission("admin.system_config")
+@require_permission_v2("admin.system_config")
 async def set_provider_state(
     provider_id: str,
     activate: Optional[bool] = Query(None, description="Set enabled state. If not provided, inverts current state."),
@@ -280,7 +281,7 @@ async def set_provider_state(
     summary="Check Provider Health",
     description="Perform a health check on an LLM provider.",
 )
-@require_permission("admin.system_config")
+@require_permission_v2("admin.system_config")
 async def check_provider_health(
     provider_id: str,
     current_user_ctx: dict = Depends(get_current_user_with_permissions),
@@ -316,7 +317,7 @@ async def check_provider_health(
     summary="Create LLM Model",
     description="Create a new LLM model for a provider.",
 )
-@require_permission("admin.system_config")
+@require_permission_v2("admin.system_config")
 async def create_model(
     model_data: LLMModelCreate,
     current_user_ctx: dict = Depends(get_current_user_with_permissions),
@@ -350,7 +351,7 @@ async def create_model(
     summary="List LLM Models",
     description="List all configured LLM models.",
 )
-@require_permission("admin.system_config")
+@require_permission_v2("admin.system_config")
 async def list_models(
     provider_id: Optional[str] = Query(None, description="Filter by provider ID"),
     enabled_only: bool = Query(False, description="Only return enabled models"),
@@ -401,7 +402,7 @@ async def list_models(
     summary="Get LLM Model",
     description="Get a specific LLM model by ID.",
 )
-@require_permission("admin.system_config")
+@require_permission_v2("admin.system_config")
 async def get_model(
     model_id: str,
     current_user_ctx: dict = Depends(get_current_user_with_permissions),
@@ -436,7 +437,7 @@ async def get_model(
     summary="Update LLM Model",
     description="Update an existing LLM model.",
 )
-@require_permission("admin.system_config")
+@require_permission_v2("admin.system_config")
 async def update_model(
     model_id: str,
     model_data: LLMModelUpdate,
@@ -473,7 +474,7 @@ async def update_model(
     summary="Delete LLM Model",
     description="Delete an LLM model.",
 )
-@require_permission("admin.system_config")
+@require_permission_v2("admin.system_config")
 async def delete_model(
     model_id: str,
     current_user_ctx: dict = Depends(get_current_user_with_permissions),
@@ -500,7 +501,7 @@ async def delete_model(
     summary="Set LLM Model State",
     description="Set the enabled status of an LLM model.",
 )
-@require_permission("admin.system_config")
+@require_permission_v2("admin.system_config")
 async def set_model_state(
     model_id: str,
     activate: Optional[bool] = Query(None, description="Set enabled state. If not provided, inverts current state."),

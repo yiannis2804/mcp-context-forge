@@ -21,6 +21,7 @@ from sqlalchemy.orm import Session
 from mcpgateway.config import settings
 from mcpgateway.db import get_db
 from mcpgateway.middleware.rbac import get_current_user_with_permissions, require_permission
+from mcpgateway.services.policy_engine import require_permission_v2  # Phase 1 - #2019
 from mcpgateway.services.logging_service import LoggingService
 from mcpgateway.services.sso_service import SSOService
 
@@ -343,7 +344,7 @@ async def handle_sso_callback(
 
 # Admin endpoints for SSO provider management
 @sso_router.post("/admin/providers", response_model=Dict)
-@require_permission("admin.sso_providers:create")
+@require_permission_v2("admin.sso_providers:create")
 async def create_sso_provider(
     provider_data: SSOProviderCreateRequest,
     db: Session = Depends(get_db),
@@ -382,7 +383,7 @@ async def create_sso_provider(
 
 
 @sso_router.get("/admin/providers", response_model=List[Dict])
-@require_permission("admin.sso_providers:read")
+@require_permission_v2("admin.sso_providers:read")
 async def list_all_sso_providers(
     db: Session = Depends(get_db),
     user=Depends(get_current_user_with_permissions),
@@ -423,7 +424,7 @@ async def list_all_sso_providers(
 
 
 @sso_router.get("/admin/providers/{provider_id}", response_model=Dict)
-@require_permission("admin.sso_providers:read")
+@require_permission_v2("admin.sso_providers:read")
 async def get_sso_provider(
     provider_id: str,
     db: Session = Depends(get_db),
@@ -469,7 +470,7 @@ async def get_sso_provider(
 
 
 @sso_router.put("/admin/providers/{provider_id}", response_model=Dict)
-@require_permission("admin.sso_providers:update")
+@require_permission_v2("admin.sso_providers:update")
 async def update_sso_provider(
     provider_id: str,
     provider_data: SSOProviderUpdateRequest,
@@ -512,7 +513,7 @@ async def update_sso_provider(
 
 
 @sso_router.delete("/admin/providers/{provider_id}")
-@require_permission("admin.sso_providers:delete")
+@require_permission_v2("admin.sso_providers:delete")
 async def delete_sso_provider(
     provider_id: str,
     db: Session = Depends(get_db),
@@ -566,7 +567,7 @@ class ApprovalActionRequest(BaseModel):
 
 
 @sso_router.get("/pending-approvals", response_model=List[PendingUserApprovalResponse])
-@require_permission("admin.user_management")
+@require_permission_v2("admin.user_management")
 async def list_pending_approvals(
     include_expired: bool = Query(False, description="Include expired approval requests"),
     db: Session = Depends(get_db),
@@ -619,7 +620,7 @@ async def list_pending_approvals(
 
 
 @sso_router.post("/pending-approvals/{approval_id}/action")
-@require_permission("admin.user_management")
+@require_permission_v2("admin.user_management")
 async def handle_approval_request(
     approval_id: str,
     request: ApprovalActionRequest,

@@ -31,6 +31,7 @@ from mcpgateway.auth import get_current_user
 from mcpgateway.config import settings
 from mcpgateway.db import EmailUser, SessionLocal, utc_now
 from mcpgateway.middleware.rbac import get_current_user_with_permissions, require_permission
+from mcpgateway.services.policy_engine import require_permission_v2  # Phase 1 - #2019
 from mcpgateway.schemas import (
     AuthenticationResponse,
     AuthEventResponse,
@@ -500,7 +501,7 @@ async def get_auth_events(limit: int = 50, offset: int = 0, current_user: EmailU
 
 # Admin-only endpoints
 @email_auth_router.get("/admin/users", response_model=Union[CursorPaginatedUsersResponse, List[EmailUserResponse]])
-@require_permission("admin.user_management")
+@require_permission_v2("admin.user_management")
 async def list_users(
     cursor: Optional[str] = Query(None, description="Pagination cursor for fetching the next set of results"),
     limit: Optional[int] = Query(
@@ -552,7 +553,7 @@ async def list_users(
 
 
 @email_auth_router.get("/admin/events", response_model=list[AuthEventResponse])
-@require_permission("admin.user_management")
+@require_permission_v2("admin.user_management")
 async def list_all_auth_events(limit: int = 100, offset: int = 0, user_email: Optional[str] = None, current_user_ctx: dict = Depends(get_current_user_with_permissions)):
     """List authentication events for all users (admin only).
 
@@ -587,7 +588,7 @@ async def list_all_auth_events(limit: int = 100, offset: int = 0, user_email: Op
 
 
 @email_auth_router.post("/admin/users", response_model=EmailUserResponse, status_code=status.HTTP_201_CREATED)
-@require_permission("admin.user_management")
+@require_permission_v2("admin.user_management")
 async def create_user(user_request: EmailRegistrationRequest, current_user_ctx: dict = Depends(get_current_user_with_permissions)):
     """Create a new user account (admin only).
 
@@ -648,7 +649,7 @@ async def create_user(user_request: EmailRegistrationRequest, current_user_ctx: 
 
 
 @email_auth_router.get("/admin/users/{user_email}", response_model=EmailUserResponse)
-@require_permission("admin.user_management")
+@require_permission_v2("admin.user_management")
 async def get_user(user_email: str, current_user_ctx: dict = Depends(get_current_user_with_permissions)):
     """Get user by email (admin only).
 
@@ -680,7 +681,7 @@ async def get_user(user_email: str, current_user_ctx: dict = Depends(get_current
 
 
 @email_auth_router.put("/admin/users/{user_email}", response_model=EmailUserResponse)
-@require_permission("admin.user_management")
+@require_permission_v2("admin.user_management")
 async def update_user(user_email: str, user_request: EmailRegistrationRequest, current_user_ctx: dict = Depends(get_current_user_with_permissions)):
     """Update user information (admin only).
 
@@ -740,7 +741,7 @@ async def update_user(user_email: str, user_request: EmailRegistrationRequest, c
 
 
 @email_auth_router.delete("/admin/users/{user_email}", response_model=SuccessResponse)
-@require_permission("admin.user_management")
+@require_permission_v2("admin.user_management")
 async def delete_user(user_email: str, current_user_ctx: dict = Depends(get_current_user_with_permissions)):
     """Delete/deactivate user (admin only).
 
