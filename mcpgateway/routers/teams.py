@@ -30,7 +30,6 @@ from sqlalchemy.orm import Session
 from mcpgateway.config import settings
 from mcpgateway.db import get_db
 from mcpgateway.middleware.rbac import get_current_user_with_permissions, require_permission
-from mcpgateway.services.policy_engine import require_permission_v2  # Phase 1 - #2019
 from mcpgateway.schemas import (
     CursorPaginatedTeamsResponse,
     PaginatedTeamMembersResponse,
@@ -48,6 +47,7 @@ from mcpgateway.schemas import (
     TeamUpdateRequest,
 )
 from mcpgateway.services.logging_service import LoggingService
+from mcpgateway.services.policy_engine import require_permission_v2  # Phase 1 - #2019
 from mcpgateway.services.team_invitation_service import TeamInvitationService
 from mcpgateway.services.team_management_service import TeamManagementService
 

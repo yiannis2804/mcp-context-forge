@@ -76,7 +76,6 @@ from mcpgateway.db import Server as DbServer
 from mcpgateway.db import Tool as DbTool
 from mcpgateway.db import utc_now
 from mcpgateway.middleware.rbac import get_current_user_with_permissions, require_any_permission, require_permission
-from mcpgateway.services.policy_engine import require_permission_v2  # Phase 1 - #2019
 from mcpgateway.routers.email_auth import create_access_token
 from mcpgateway.schemas import (
     A2AAgentCreate,
@@ -133,6 +132,7 @@ from mcpgateway.services.mcp_session_pool import get_mcp_session_pool
 from mcpgateway.services.oauth_manager import OAuthManager
 from mcpgateway.services.performance_service import get_performance_service
 from mcpgateway.services.plugin_service import get_plugin_service
+from mcpgateway.services.policy_engine import require_permission_v2  # Phase 1 - #2019
 from mcpgateway.services.prompt_service import PromptNameConflictError, PromptNotFoundError, PromptService
 from mcpgateway.services.resource_service import ResourceNotFoundError, ResourceService, ResourceURIConflictError
 from mcpgateway.services.root_service import RootService, RootServiceError, RootServiceNotFoundError

@@ -29,7 +29,7 @@ ___ [doctest] builder.python_deploy.MCPStackPython._detect_container_engine ____
 [gw4] linux -- Python 3.12.3 /home/yiannislinux/.venv/mcpgateway/bin/python3
 361             >>> from mcpgateway.tools.builder.schema import MCPStackConfig, DeploymentConfig, GatewayConfig
 362             >>> deployer = MCPStackPython(verbose=False)
-363 
+363
 364             >>> # Test with docker specified
 365             >>> config = MCPStackConfig(
 366             ...     deployment=DeploymentConfig(type="compose", container_engine="docker"),
@@ -677,14 +677,14 @@ _____ [doctest] mcpgateway.cache.auth_cache.AuthCache.sync_revoked_tokens ______
 INFO  [mcpgateway.cache.auth_cache] AuthCache initialized: enabled=True, user_ttl=60s, revocation_ttl=30s, team_ttl=60s, role_ttl=60s, teams_list_enabled=True, teams_list_ttl=60s
 WARNI [mcpgateway.db] Connection error during execute, auto-rolling back session: OperationalError
 WARNI [mcpgateway.cache.auth_cache] AuthCache sync_revoked_tokens failed: (sqlite3.OperationalError) no such table: token_revocations
-[SQL: SELECT token_revocations.jti 
+[SQL: SELECT token_revocations.jti
 FROM token_revocations]
 (Background on this error at: https://sqlalche.me/e/20/e3q8)
 ------------------------------ Captured log call -------------------------------
 INFO     mcpgateway.cache.auth_cache:auth_cache.py:190 AuthCache initialized: enabled=True, user_ttl=60s, revocation_ttl=30s, team_ttl=60s, role_ttl=60s, teams_list_enabled=True, teams_list_ttl=60s
 WARNING  mcpgateway.db:db.py:385 Connection error during execute, auto-rolling back session: OperationalError
 WARNING  mcpgateway.cache.auth_cache:auth_cache.py:1115 AuthCache sync_revoked_tokens failed: (sqlite3.OperationalError) no such table: token_revocations
-[SQL: SELECT token_revocations.jti 
+[SQL: SELECT token_revocations.jti
 FROM token_revocations]
 (Background on this error at: https://sqlalche.me/e/20/e3q8)
 ________________ [doctest] mcpgateway.cache.global_config_cache ________________
@@ -1361,9 +1361,9 @@ ERROR [mcpgateway.services.gateway_service] Gateway initialization failed for he
     |   File "/home/yiannislinux/.venv/mcpgateway/lib/python3.12/site-packages/httpcore/_async/connection_pool.py", line 207, in handle_async_request
     |     raise UnsupportedProtocol(
     | httpcore.UnsupportedProtocol: Request URL is missing an 'http://' or 'https://' protocol.
-    | 
+    |
     | The above exception was the direct cause of the following exception:
-    | 
+    |
     | Traceback (most recent call last):
     |   File "/home/yiannislinux/.venv/mcpgateway/lib/python3.12/site-packages/mcp/client/sse.py", line 69, in sse_client
     |     async with aconnect_sse(
@@ -1424,9 +1424,9 @@ ERROR    mcpgateway.services.gateway_service:gateway_service.py:3908 Gateway ini
     |   File "/home/yiannislinux/.venv/mcpgateway/lib/python3.12/site-packages/httpcore/_async/connection_pool.py", line 207, in handle_async_request
     |     raise UnsupportedProtocol(
     | httpcore.UnsupportedProtocol: Request URL is missing an 'http://' or 'https://' protocol.
-    | 
+    |
     | The above exception was the direct cause of the following exception:
-    | 
+    |
     | Traceback (most recent call last):
     |   File "/home/yiannislinux/.venv/mcpgateway/lib/python3.12/site-packages/mcp/client/sse.py", line 69, in sse_client
     |     async with aconnect_sse(
@@ -2086,7 +2086,7 @@ INFO     mcpgateway.services.mcp_client_chat_service:mcp_client_chat_service.py:
 ERROR    mcpgateway.services.mcp_client_chat_service:mcp_client_chat_service.py:1022 Failed to create OpenAI LLM: 'NoneType' object is not callable
 INFO     mcpgateway.toolops.utils.llm_util:llm_util.py:232 Error in configuring LLM instance for ToolOps -'NoneType' object is not callable
 INFO     mcpgateway.toolops.utils.llm_util:llm_util.py:117 Configuring LLM instance for ToolOps , and LLM provider - azure_openai
-INFO     mcpgateway.services.mcp_client_chat_service:mcp_client_chat_service.py:765 Initializing Azure OpenAI provider with deployment: 
+INFO     mcpgateway.services.mcp_client_chat_service:mcp_client_chat_service.py:765 Initializing Azure OpenAI provider with deployment:
 ERROR    mcpgateway.services.mcp_client_chat_service:mcp_client_chat_service.py:820 Failed to create Azure OpenAI LLM: 'NoneType' object is not callable
 INFO     mcpgateway.toolops.utils.llm_util:llm_util.py:232 Error in configuring LLM instance for ToolOps -'NoneType' object is not callable
 INFO     mcpgateway.toolops.utils.llm_util:llm_util.py:117 Configuring LLM instance for ToolOps , and LLM provider - aws_bedrock
@@ -2296,12 +2296,12 @@ ___________________ [doctest] validate_signature.resign_data ___________________
 ----------------------------- Captured stderr call -----------------------------
 INFO  [validate_signature] No existing signature found — signing for the first time.
 INFO  [validate_signature] Old signature valid — re-signing with new key.
-ERROR [validate_signature] Signature validation failed: 
+ERROR [validate_signature] Signature validation failed:
 WARNI [validate_signature] Old signature invalid — not re-signing.
 ------------------------------ Captured log call -------------------------------
 INFO     validate_signature:validate_signature.py:285 No existing signature found — signing for the first time.
 INFO     validate_signature:validate_signature.py:296 Old signature valid — re-signing with new key.
-ERROR    validate_signature:validate_signature.py:197 Signature validation failed: 
+ERROR    validate_signature:validate_signature.py:197 Signature validation failed:
 WARNING  validate_signature:validate_signature.py:293 Old signature invalid — not re-signing.
 _________________________ [doctest] verify_credentials _________________________
 [gw6] linux -- Python 3.12.3 /home/yiannislinux/.venv/mcpgateway/bin/python3
@@ -2313,10 +2313,10 @@ WARNING  mcpgateway.utils.verify_credentials:verify_credentials.py:141 JWT token
 _______________ [doctest] validate_signature.validate_signature ________________
 [gw3] linux -- Python 3.12.3 /home/yiannislinux/.venv/mcpgateway/bin/python3
 ----------------------------- Captured stderr call -----------------------------
-ERROR [validate_signature] Signature validation failed: 
+ERROR [validate_signature] Signature validation failed:
 ERROR [validate_signature] Invalid hex signature format.
 ------------------------------ Captured log call -------------------------------
-ERROR    validate_signature:validate_signature.py:197 Signature validation failed: 
+ERROR    validate_signature:validate_signature.py:197 Signature validation failed:
 ERROR    validate_signature:validate_signature.py:176 Invalid hex signature format.
 __________________ [doctest] verify_credentials.require_auth ___________________
 [gw7] linux -- Python 3.12.3 /home/yiannislinux/.venv/mcpgateway/bin/python3

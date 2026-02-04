@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Centralized Policy Decision Point (PDP) for all access control decisions.
 
