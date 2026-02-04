@@ -29,8 +29,7 @@ from mcpgateway.llm_schemas import (
     LLMProviderUpdate,
     ProviderHealthCheck,
 )
-from mcpgateway.middleware.rbac import get_current_user_with_permissions, require_permission
-from mcpgateway.services.policy_engine import require_permission_v2  # Phase 1 - #2019
+from mcpgateway.middleware.rbac import get_current_user_with_permissions
 from mcpgateway.services.llm_provider_service import (
     LLMModelConflictError,
     LLMModelNotFoundError,
@@ -39,6 +38,7 @@ from mcpgateway.services.llm_provider_service import (
     LLMProviderService,
 )
 from mcpgateway.services.logging_service import LoggingService
+from mcpgateway.services.policy_engine import require_permission_v2  # Phase 1 - #2019
 
 # Initialize logging
 logging_service = LoggingService()

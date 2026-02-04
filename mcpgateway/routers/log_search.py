@@ -30,9 +30,9 @@ from mcpgateway.db import (
     SecurityEvent,
     StructuredLogEntry,
 )
-from mcpgateway.middleware.rbac import get_current_user_with_permissions, require_permission
-from mcpgateway.services.policy_engine import require_permission_v2  # Phase 1 - #2019
+from mcpgateway.middleware.rbac import get_current_user_with_permissions
 from mcpgateway.services.log_aggregator import get_log_aggregator
+from mcpgateway.services.policy_engine import require_permission_v2  # Phase 1 - #2019
 
 logger = logging.getLogger(__name__)
 

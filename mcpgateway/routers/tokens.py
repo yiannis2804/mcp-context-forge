@@ -18,10 +18,10 @@ from sqlalchemy.orm import Session
 
 # First-Party
 from mcpgateway.db import get_db
-from mcpgateway.middleware.rbac import get_current_user_with_permissions, require_permission
-from mcpgateway.services.policy_engine import require_permission_v2  # Phase 1 - #2019
+from mcpgateway.middleware.rbac import get_current_user_with_permissions
 from mcpgateway.schemas import TokenCreateRequest, TokenCreateResponse, TokenListResponse, TokenResponse, TokenRevokeRequest, TokenUpdateRequest, TokenUsageStatsResponse
 from mcpgateway.services.permission_service import PermissionService
+from mcpgateway.services.policy_engine import require_permission_v2  # Phase 1 - #2019
 from mcpgateway.services.token_catalog_service import TokenCatalogService, TokenScope
 
 logger = logging.getLogger(__name__)

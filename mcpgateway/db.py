@@ -31,10 +31,9 @@ import uuid
 
 # Third-Party
 import jsonschema
-from sqlalchemy import Boolean, Column, create_engine, DateTime, event, Float, ForeignKey, func, Index, UUID
+from sqlalchemy import Boolean, Column, create_engine, DateTime, event, Float, ForeignKey, func, Index
 from sqlalchemy import inspect as sa_inspect
-from sqlalchemy import Integer, JSON, make_url, MetaData, select, String, Table, text, Text, UniqueConstraint, VARCHAR
-from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy import Integer, JSON, make_url, MetaData, select, String, Table, text, Text, UniqueConstraint, UUID, VARCHAR
 from sqlalchemy.engine import Engine
 from sqlalchemy.event import listen
 from sqlalchemy.exc import OperationalError, ProgrammingError, SQLAlchemyError
@@ -1021,7 +1020,6 @@ class Permissions:
         return resource_permissions
 
 
-
 # ---------------------------------------------------------------------------
 # Policy Engine Database Models (Phase 1 - #2019)
 # ---------------------------------------------------------------------------
@@ -1029,9 +1027,9 @@ class Permissions:
 
 class AccessPermission(Base):
     """Configurable permission definitions (replaces hardcoded Permissions enum)."""
-    
+
     __tablename__ = "access_permissions"
-    
+
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     name = Column(String(100), unique=True, nullable=False, index=True)
     description = Column(Text)
@@ -1041,16 +1039,16 @@ class AccessPermission(Base):
     is_active = Column(Boolean, default=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
-    
+
     def __repr__(self):
         return f"<AccessPermission(name={self.name}, resource_type={self.resource_type}, action={self.action})>"
 
 
 class AccessPolicy(Base):
     """Policy rules with conditions (ABAC support - will be used in Phase 2)."""
-    
+
     __tablename__ = "access_policies"
-    
+
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     name = Column(String(100), unique=True, nullable=False, index=True)
     description = Column(Text)
@@ -1061,49 +1059,49 @@ class AccessPolicy(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
     created_by = Column(String(255))
-    
+
     def __repr__(self):
         return f"<AccessPolicy(name={self.name}, effect={self.effect}, priority={self.priority})>"
 
 
 class AccessDecisionLog(Base):
     """Audit log of all access control decisions."""
-    
+
     __tablename__ = "access_decisions"
-    
+
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     timestamp = Column(DateTime(timezone=True), nullable=False, server_default=func.now(), index=True)
-    
+
     # Subject (who)
     subject_email = Column(String(255), index=True)
     subject_type = Column(String(50))  # 'user', 'token', 'service'
-    
+
     # Action (what)
     permission = Column(String(100), index=True)
     action = Column(String(50))
-    
+
     # Resource (on what)
     resource_type = Column(String(50), index=True)
     resource_id = Column(String(255))
-    
+
     # Decision
     decision = Column(String(10), nullable=False, index=True)  # 'allow', 'deny'
     reason = Column(Text)
     matching_policies = Column(JSON)  # List of policy IDs that matched
-    
+
     # Context
     context = Column(JSON)  # IP, user-agent, request metadata
     request_id = Column(String(100), index=True)
-    
+
     def __repr__(self):
         return f"<AccessDecisionLog(subject={self.subject_email}, decision={self.decision}, permission={self.permission})>"
 
 
 class ResourceAccessRule(Base):
     """Fine-grained per-resource access rules (for Phase 4)."""
-    
+
     __tablename__ = "resource_access_rules"
-    
+
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     resource_type = Column(String(50), nullable=False, index=True)
     resource_id = Column(String(255))  # NULL = applies to all resources of type
@@ -1112,13 +1110,12 @@ class ResourceAccessRule(Base):
     denied_users = Column(JSON)  # List of user emails explicitly denied
     is_active = Column(Boolean, default=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
-    
+
     # Relationship
     policy = relationship("AccessPolicy", backref="resource_rules")
-    
+
     def __repr__(self):
         return f"<ResourceAccessRule(resource_type={self.resource_type}, resource_id={self.resource_id})>"
-
 
 
 # ---------------------------------------------------------------------------

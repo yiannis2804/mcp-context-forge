@@ -27,10 +27,10 @@ from sqlalchemy.orm import Session
 
 # First-Party
 from mcpgateway.db import Permissions, SessionLocal
-from mcpgateway.middleware.rbac import get_current_user_with_permissions, require_admin_permission, require_permission
-from mcpgateway.services.policy_engine import require_permission_v2  # Phase 1 - #2019
+from mcpgateway.middleware.rbac import get_current_user_with_permissions, require_admin_permission
 from mcpgateway.schemas import PermissionCheckRequest, PermissionCheckResponse, PermissionListResponse, RoleCreateRequest, RoleResponse, RoleUpdateRequest, UserRoleAssignRequest, UserRoleResponse
 from mcpgateway.services.permission_service import PermissionService
+from mcpgateway.services.policy_engine import require_permission_v2  # Phase 1 - #2019
 from mcpgateway.services.role_service import RoleService
 
 logger = logging.getLogger(__name__)

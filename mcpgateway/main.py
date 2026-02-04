@@ -78,8 +78,7 @@ from mcpgateway.middleware.compression import SSEAwareCompressMiddleware
 from mcpgateway.middleware.correlation_id import CorrelationIDMiddleware
 from mcpgateway.middleware.http_auth_middleware import HttpAuthMiddleware
 from mcpgateway.middleware.protocol_version import MCPProtocolVersionMiddleware
-from mcpgateway.middleware.rbac import get_current_user_with_permissions, require_permission
-from mcpgateway.services.policy_engine import require_permission_v2  # Phase 1 - #2019
+from mcpgateway.middleware.rbac import get_current_user_with_permissions
 from mcpgateway.middleware.request_logging_middleware import RequestLoggingMiddleware
 from mcpgateway.middleware.security_headers import SecurityHeadersMiddleware
 from mcpgateway.middleware.token_scoping import token_scoping_middleware
@@ -134,6 +133,7 @@ from mcpgateway.services.log_aggregator import get_log_aggregator
 from mcpgateway.services.logging_service import LoggingService
 from mcpgateway.services.metrics import setup_metrics
 from mcpgateway.services.permission_service import PermissionService
+from mcpgateway.services.policy_engine import require_permission_v2  # Phase 1 - #2019
 from mcpgateway.services.prompt_service import PromptError, PromptLockConflictError, PromptNameConflictError, PromptNotFoundError
 from mcpgateway.services.resource_service import ResourceError, ResourceLockConflictError, ResourceNotFoundError, ResourceURIConflictError
 from mcpgateway.services.server_service import ServerError, ServerLockConflictError, ServerNameConflictError, ServerNotFoundError

@@ -19,14 +19,14 @@ from sqlalchemy.orm import Session
 
 # First-Party
 from mcpgateway.db import LLMProviderType
-from mcpgateway.middleware.rbac import get_current_user_with_permissions, get_db, require_permission
-from mcpgateway.services.policy_engine import require_permission_v2  # Phase 1 - #2019
+from mcpgateway.middleware.rbac import get_current_user_with_permissions, get_db
 from mcpgateway.services.llm_provider_service import (
     LLMModelNotFoundError,
     LLMProviderNotFoundError,
     LLMProviderService,
 )
 from mcpgateway.services.logging_service import LoggingService
+from mcpgateway.services.policy_engine import require_permission_v2  # Phase 1 - #2019
 
 # Initialize logging
 logging_service = LoggingService()
