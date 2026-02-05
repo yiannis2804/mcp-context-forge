@@ -999,7 +999,8 @@ async def get_overview_partial(
 
 
 @admin_router.get("/config/passthrough-headers", response_model=GlobalConfigRead)
-@ require_permission_v2("admin.system_config") @ rate_limit(requests_per_minute=30)  # Lower limit for config endpoints
+@require_permission_v2("admin.system_config")
+@rate_limit(requests_per_minute=30)  # Lower limit for config endpoints
 async def get_global_passthrough_headers(
     db: Session = Depends(get_db),
     _user=Depends(get_current_user_with_permissions),
@@ -1030,7 +1031,8 @@ async def get_global_passthrough_headers(
 
 
 @admin_router.put("/config/passthrough-headers", response_model=GlobalConfigRead)
-@ require_permission_v2("admin.system_config") @ rate_limit(requests_per_minute=20)  # Stricter limit for config updates
+@require_permission_v2("admin.system_config")
+@rate_limit(requests_per_minute=20)  # Stricter limit for config updates
 async def update_global_passthrough_headers(
     request: Request,  # pylint: disable=unused-argument
     config_update: GlobalConfigUpdate,
@@ -1084,7 +1086,8 @@ async def update_global_passthrough_headers(
 
 
 @admin_router.post("/config/passthrough-headers/invalidate-cache")
-@ require_permission_v2("admin.system_config") @ rate_limit(requests_per_minute=10)  # Strict limit for cache operations
+@require_permission_v2("admin.system_config")
+@rate_limit(requests_per_minute=10)  # Strict limit for cache operations
 async def invalidate_passthrough_headers_cache(
     _user=Depends(get_current_user_with_permissions),
     _db: Session = Depends(get_db),
@@ -1122,7 +1125,8 @@ async def invalidate_passthrough_headers_cache(
 
 
 @admin_router.get("/config/passthrough-headers/cache-stats")
-@ require_permission_v2("admin.system_config") @ rate_limit(requests_per_minute=30)
+@require_permission_v2("admin.system_config")
+@rate_limit(requests_per_minute=30)
 async def get_passthrough_headers_cache_stats(
     _user=Depends(get_current_user_with_permissions),
     _db: Session = Depends(get_db),
@@ -1158,7 +1162,8 @@ async def get_passthrough_headers_cache_stats(
 
 
 @admin_router.post("/cache/a2a-stats/invalidate")
-@ require_permission_v2("admin.system_config") @ rate_limit(requests_per_minute=10)
+@require_permission_v2("admin.system_config")
+@rate_limit(requests_per_minute=10)
 async def invalidate_a2a_stats_cache(
     _user=Depends(get_current_user_with_permissions),
     _db: Session = Depends(get_db),
@@ -1194,7 +1199,8 @@ async def invalidate_a2a_stats_cache(
 
 
 @admin_router.get("/cache/a2a-stats/stats")
-@ require_permission_v2("admin.system_config") @ rate_limit(requests_per_minute=30)
+@require_permission_v2("admin.system_config")
+@rate_limit(requests_per_minute=30)
 async def get_a2a_stats_cache_stats(
     _user=Depends(get_current_user_with_permissions),
     _db: Session = Depends(get_db),
@@ -1223,7 +1229,8 @@ async def get_a2a_stats_cache_stats(
 
 
 @admin_router.get("/mcp-pool/metrics")
-@ require_permission_v2("admin.system_config") @ rate_limit(requests_per_minute=60)
+@require_permission_v2("admin.system_config")
+@rate_limit(requests_per_minute=60)
 async def get_mcp_session_pool_metrics(
     request: Request,  # pylint: disable=unused-argument
     _user=Depends(get_current_user_with_permissions),
