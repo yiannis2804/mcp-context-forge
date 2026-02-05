@@ -1037,10 +1037,11 @@ class AccessPermission(Base):
     action = Column(String(50))  # e.g., "read", "create"
     is_system = Column(Boolean, default=False)  # System permissions can't be deleted
     is_active = Column(Boolean, default=True)
-    created_at = Column(DateTime(timezone=True), server_default=func.now())
-    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+    created_at = Column(DateTime(timezone=True), server_default=func.now())  # pylint: disable=not-callable
+    updated_at = Column(DateTime(timezone=True), onupdate=func.now())  # pylint: disable=not-callable
 
     def __repr__(self):
+        """Return string representation."""
         return f"<AccessPermission(name={self.name}, resource_type={self.resource_type}, action={self.action})>"
 
 
@@ -1056,11 +1057,12 @@ class AccessPolicy(Base):
     priority = Column(Integer, default=0)  # Higher priority evaluated first
     conditions = Column(JSON)  # Policy conditions (for Phase 2 ABAC)
     is_active = Column(Boolean, default=True)
-    created_at = Column(DateTime(timezone=True), server_default=func.now())
-    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+    created_at = Column(DateTime(timezone=True), server_default=func.now())  # pylint: disable=not-callable
+    updated_at = Column(DateTime(timezone=True), onupdate=func.now())  # pylint: disable=not-callable
     created_by = Column(String(255))
 
     def __repr__(self):
+        """Return string representation."""
         return f"<AccessPolicy(name={self.name}, effect={self.effect}, priority={self.priority})>"
 
 
@@ -1070,7 +1072,7 @@ class AccessDecisionLog(Base):
     __tablename__ = "access_decisions"
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    timestamp = Column(DateTime(timezone=True), nullable=False, server_default=func.now(), index=True)
+    timestamp = Column(DateTime(timezone=True), nullable=False, server_default=func.now(), index=True)  # pylint: disable=not-callable
 
     # Subject (who)
     subject_email = Column(String(255), index=True)
@@ -1094,6 +1096,7 @@ class AccessDecisionLog(Base):
     request_id = Column(String(100), index=True)
 
     def __repr__(self):
+        """Return string representation."""
         return f"<AccessDecisionLog(subject={self.subject_email}, decision={self.decision}, permission={self.permission})>"
 
 
@@ -1109,12 +1112,13 @@ class ResourceAccessRule(Base):
     allowed_roles = Column(JSON)  # List of role names
     denied_users = Column(JSON)  # List of user emails explicitly denied
     is_active = Column(Boolean, default=True)
-    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    created_at = Column(DateTime(timezone=True), server_default=func.now())  # pylint: disable=not-callable
 
     # Relationship
     policy = relationship("AccessPolicy", backref="resource_rules")
 
     def __repr__(self):
+        """Return string representation."""
         return f"<ResourceAccessRule(resource_type={self.resource_type}, resource_id={self.resource_id})>"
 
 
@@ -5264,11 +5268,7 @@ class SSOProvider(Base):
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utc_now, onupdate=utc_now, nullable=False)
 
     def __repr__(self):
-        """String representation of SSO provider.
-
-        Returns:
-            String representation of the SSO provider instance
-        """
+        """Return string representation."""
         return f"<SSOProvider(id='{self.id}', name='{self.name}', enabled={self.is_enabled})>"
 
 
@@ -5339,11 +5339,7 @@ class SSOAuthSession(Base):
         return now > expires
 
     def __repr__(self):
-        """String representation of SSO auth session.
-
-        Returns:
-            str: String representation of the session object
-        """
+        """Return string representation."""
         return f"<SSOAuthSession(id='{self.id}', provider='{self.provider_id}', expired={self.is_expired})>"
 
 

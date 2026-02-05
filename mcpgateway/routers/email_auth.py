@@ -29,7 +29,7 @@ from sqlalchemy.orm import Session
 # First-Party
 from mcpgateway.auth import get_current_user
 from mcpgateway.config import settings
-from mcpgateway.db import EmailUser, SessionLocal, utc_now
+from mcpgateway.db import EmailUser, get_db, utc_now
 from mcpgateway.middleware.rbac import get_current_user_with_permissions
 from mcpgateway.schemas import (
     AdminUserUpdateRequest,
@@ -57,35 +57,6 @@ email_auth_router = APIRouter()
 
 # Security scheme
 bearer_scheme = HTTPBearer(auto_error=False)
-
-
-def get_db():
-    """Database dependency.
-
-    Commits the transaction on successful completion to avoid implicit rollbacks
-    for read-only operations. Rolls back explicitly on exception.
-
-    Yields:
-        Session: SQLAlchemy database session
-
-    Raises:
-        Exception: Re-raises any exception after rolling back the transaction.
-    """
-    db = SessionLocal()
-    try:
-        yield db
-        db.commit()
-    except Exception:
-        try:
-            db.rollback()
-        except Exception:
-            try:
-                db.invalidate()
-            except Exception:
-                pass  # nosec B110 - Best effort cleanup on connection failure
-        raise
-    finally:
-        db.close()
 
 
 def get_client_ip(request: Request) -> str:
@@ -555,7 +526,7 @@ async def list_users(
 
 @email_auth_router.get("/admin/events", response_model=list[AuthEventResponse])
 @require_permission_v2("admin.user_management")
-async def list_all_auth_events(limit: int = 100, offset: int = 0, user_email: Optional[str] = None, current_user_ctx: dict = Depends(get_current_user_with_permissions)):
+async def list_all_auth_events(limit: int = 100, offset: int = 0, user_email: Optional[str] = None, current_user_ctx: dict = Depends(get_current_user_with_permissions), db: Session = Depends(get_db)):
     """List authentication events for all users (admin only).
 
     Args:
@@ -589,7 +560,7 @@ async def list_all_auth_events(limit: int = 100, offset: int = 0, user_email: Op
 
 @email_auth_router.post("/admin/users", response_model=EmailUserResponse, status_code=status.HTTP_201_CREATED)
 @require_permission_v2("admin.user_management")
-async def create_user(user_request: EmailRegistrationRequest, current_user_ctx: dict = Depends(get_current_user_with_permissions)):
+async def create_user(user_request: EmailRegistrationRequest, current_user_ctx: dict = Depends(get_current_user_with_permissions), db: Session = Depends(get_db)):
     """Create a new user account (admin only).
 
     Args:
@@ -652,7 +623,7 @@ async def create_user(user_request: EmailRegistrationRequest, current_user_ctx: 
 
 @email_auth_router.get("/admin/users/{user_email}", response_model=EmailUserResponse)
 @require_permission_v2("admin.user_management")
-async def get_user(user_email: str, current_user_ctx: dict = Depends(get_current_user_with_permissions)):
+async def get_user(user_email: str, current_user_ctx: dict = Depends(get_current_user_with_permissions), db: Session = Depends(get_db)):
     """Get user by email (admin only).
 
     Args:
@@ -686,8 +657,6 @@ async def get_user(user_email: str, current_user_ctx: dict = Depends(get_current
 @require_permission_v2("admin.user_management")
 @require_permission_v2("admin.user_management")
 async def update_user(user_email: str, user_request: AdminUserUpdateRequest, current_user_ctx: dict = Depends(get_current_user_with_permissions), db: Session = Depends(get_db)):
-=======
-async def update_user(user_email: str, user_request: EmailRegistrationRequest, current_user_ctx: dict = Depends(get_current_user_with_permissions)):
     """Update user information (admin only).
 >>>>>>> b878af64 (fix: resolve formatting and security issues per review)
 
@@ -760,7 +729,7 @@ async def update_user(user_email: str, user_request: EmailRegistrationRequest, c
 
 @email_auth_router.delete("/admin/users/{user_email}", response_model=SuccessResponse)
 @require_permission_v2("admin.user_management")
-async def delete_user(user_email: str, current_user_ctx: dict = Depends(get_current_user_with_permissions)):
+async def delete_user(user_email: str, current_user_ctx: dict = Depends(get_current_user_with_permissions), db: Session = Depends(get_db)):
     """Delete/deactivate user (admin only).
 
     Args:

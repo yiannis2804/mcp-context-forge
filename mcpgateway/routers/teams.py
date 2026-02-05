@@ -1,3 +1,5 @@
+# First-Party
+
 # -*- coding: utf-8 -*-
 """Location: ./mcpgateway/routers/teams.py
 Copyright 2025
@@ -29,7 +31,7 @@ from sqlalchemy.orm import Session
 # First-Party
 from mcpgateway.config import settings
 from mcpgateway.db import get_db
-from mcpgateway.middleware.rbac import get_current_user_with_permissions, require_permission
+from mcpgateway.middleware.rbac import get_current_user_with_permissions
 from mcpgateway.schemas import (
     CursorPaginatedTeamsResponse,
     PaginatedTeamMembersResponse,
@@ -47,7 +49,6 @@ from mcpgateway.schemas import (
     TeamUpdateRequest,
 )
 from mcpgateway.services.logging_service import LoggingService
-from mcpgateway.services.policy_engine import require_permission_v2  # Phase 1 - #2019
 from mcpgateway.services.team_invitation_service import TeamInvitationService
 from mcpgateway.services.team_management_service import TeamManagementService
 
@@ -65,8 +66,7 @@ teams_router = APIRouter()
 
 
 @teams_router.post("/", response_model=TeamResponse, status_code=status.HTTP_201_CREATED)
-@require_permission_v2("teams.create")
-async def create_team(request: TeamCreateRequest, current_user_ctx: dict = Depends(get_current_user_with_permissions)) -> TeamResponse:
+async def create_team(request: TeamCreateRequest, current_user_ctx: dict = Depends(get_current_user_with_permissions), db: Session = Depends(get_db)) -> TeamResponse:
     """Create a new team.
 
     Args:
@@ -116,7 +116,6 @@ async def create_team(request: TeamCreateRequest, current_user_ctx: dict = Depen
 
 
 @teams_router.get("/", response_model=Union[TeamListResponse, CursorPaginatedTeamsResponse])
-@require_permission_v2("teams.read")
 async def list_teams(
     skip: int = Query(0, ge=0, description="Number of teams to skip"),
     limit: int = Query(50, ge=1, le=100, description="Number of teams to return"),
@@ -208,7 +207,6 @@ async def list_teams(
 
 
 @teams_router.get("/discover", response_model=List[TeamDiscoveryResponse])
-@require_permission("teams.read")
 async def discover_public_teams(
     skip: int = Query(0, ge=0, description="Number of teams to skip"),
     limit: int = Query(50, ge=1, le=100, description="Number of teams to return"),
@@ -266,8 +264,7 @@ async def discover_public_teams(
 
 
 @teams_router.get("/{team_id}", response_model=TeamResponse)
-@require_permission_v2("teams.read")
-async def get_team(team_id: str, current_user: EmailUserResponse = Depends(get_current_user), db: Session = Depends(get_db)) -> TeamResponse:
+async def get_team(team_id: str, current_user: dict = Depends(get_current_user_with_permissions), db: Session = Depends(get_db)) -> TeamResponse:
     """Get a specific team by ID.
 
     Args:
@@ -320,8 +317,7 @@ async def get_team(team_id: str, current_user: EmailUserResponse = Depends(get_c
 
 
 @teams_router.put("/{team_id}", response_model=TeamResponse)
-@require_permission_v2("teams.update")
-async def update_team(team_id: str, request: TeamUpdateRequest, current_user: EmailUserResponse = Depends(get_current_user), db: Session = Depends(get_db)) -> TeamResponse:
+async def update_team(team_id: str, request: TeamUpdateRequest, current_user: dict = Depends(get_current_user_with_permissions), db: Session = Depends(get_db)) -> TeamResponse:
     """Update a team.
 
     Args:
@@ -384,8 +380,7 @@ async def update_team(team_id: str, request: TeamUpdateRequest, current_user: Em
 
 
 @teams_router.delete("/{team_id}", response_model=SuccessResponse)
-@require_permission_v2("teams.delete")
-async def delete_team(team_id: str, current_user: EmailUserResponse = Depends(get_current_user), db: Session = Depends(get_db)) -> SuccessResponse:
+async def delete_team(team_id: str, current_user: dict = Depends(get_current_user_with_permissions), db: Session = Depends(get_db)) -> SuccessResponse:
     """Delete a team.
 
     Args:
@@ -427,7 +422,6 @@ async def delete_team(team_id: str, current_user: EmailUserResponse = Depends(ge
 
 
 @teams_router.get("/{team_id}/members", response_model=Union[PaginatedTeamMembersResponse, List[TeamMemberResponse]])
-@require_permission_v2("teams.read")
 async def list_team_members(
     team_id: str,
     cursor: Optional[str] = Query(None, description="Cursor for pagination"),
@@ -505,7 +499,6 @@ async def list_team_members(
 
 
 @teams_router.put("/{team_id}/members/{user_email}", response_model=TeamMemberResponse)
-@require_permission_v2("teams.manage_members")
 async def update_team_member(
     team_id: str, user_email: str, request: TeamMemberUpdateRequest, current_user: dict = Depends(get_current_user_with_permissions), db: Session = Depends(get_db)
 ) -> TeamMemberResponse:
@@ -556,8 +549,7 @@ async def update_team_member(
 
 
 @teams_router.delete("/{team_id}/members/{user_email}", response_model=SuccessResponse)
-@require_permission_v2("teams.manage_members")
-async def remove_team_member(team_id: str, user_email: str, current_user: EmailUserResponse = Depends(get_current_user), db: Session = Depends(get_db)) -> SuccessResponse:
+async def remove_team_member(team_id: str, user_email: str, current_user: dict = Depends(get_current_user_with_permissions), db: Session = Depends(get_db)) -> SuccessResponse:
     """Remove a team member.
 
     Args:
@@ -600,8 +592,7 @@ async def remove_team_member(team_id: str, user_email: str, current_user: EmailU
 
 
 @teams_router.post("/{team_id}/invitations", response_model=TeamInvitationResponse, status_code=status.HTTP_201_CREATED)
-@require_permission_v2("teams.manage_members")
-async def invite_team_member(team_id: str, request: TeamInviteRequest, current_user: EmailUserResponse = Depends(get_current_user), db: Session = Depends(get_db)) -> TeamInvitationResponse:
+async def invite_team_member(team_id: str, request: TeamInviteRequest, current_user: dict = Depends(get_current_user_with_permissions), db: Session = Depends(get_db)) -> TeamInvitationResponse:
     """Invite a user to join a team.
 
     Args:
@@ -659,8 +650,7 @@ async def invite_team_member(team_id: str, request: TeamInviteRequest, current_u
 
 
 @teams_router.get("/{team_id}/invitations", response_model=List[TeamInvitationResponse])
-@require_permission_v2("teams.read")
-async def list_team_invitations(team_id: str, current_user: EmailUserResponse = Depends(get_current_user), db: Session = Depends(get_db)) -> List[TeamInvitationResponse]:
+async def list_team_invitations(team_id: str, current_user: dict = Depends(get_current_user_with_permissions), db: Session = Depends(get_db)) -> List[TeamInvitationResponse]:
     """List team invitations.
 
     Args:
@@ -718,8 +708,7 @@ async def list_team_invitations(team_id: str, current_user: EmailUserResponse = 
 
 
 @teams_router.post("/invitations/{token}/accept", response_model=TeamMemberResponse)
-@require_permission_v2("teams.read")
-async def accept_team_invitation(token: str, current_user: EmailUserResponse = Depends(get_current_user), db: Session = Depends(get_db)) -> TeamMemberResponse:
+async def accept_team_invitation(token: str, current_user: dict = Depends(get_current_user_with_permissions), db: Session = Depends(get_db)) -> TeamMemberResponse:
     """Accept a team invitation.
 
     Args:
@@ -755,8 +744,7 @@ async def accept_team_invitation(token: str, current_user: EmailUserResponse = D
 
 
 @teams_router.delete("/invitations/{invitation_id}", response_model=SuccessResponse)
-@require_permission_v2("teams.manage_members")
-async def cancel_team_invitation(invitation_id: str, current_user: EmailUserResponse = Depends(get_current_user), db: Session = Depends(get_db)) -> SuccessResponse:
+async def cancel_team_invitation(invitation_id: str, current_user: dict = Depends(get_current_user_with_permissions), db: Session = Depends(get_db)) -> SuccessResponse:
     """Cancel a team invitation.
 
     Args:
@@ -799,59 +787,6 @@ async def cancel_team_invitation(invitation_id: str, current_user: EmailUserResp
     except Exception as e:
         logger.error(f"Error cancelling invitation {invitation_id}: {e}")
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Failed to cancel invitation")
-
-
-@teams_router.get("/discover", response_model=List[TeamDiscoveryResponse])
-@require_permission_v2("teams.read")
-async def discover_public_teams(
-    skip: int = Query(0, ge=0, description="Number of teams to skip"),
-    limit: int = Query(50, ge=1, le=100, description="Number of teams to return"),
-    current_user_ctx: dict = Depends(get_current_user_with_permissions),
-) -> List[TeamDiscoveryResponse]:
-    """Discover public teams that can be joined.
-
-    Returns public teams that are discoverable to all authenticated users.
-    Only shows teams where the current user is not already a member.
-
-    Args:
-        skip: Number of teams to skip for pagination
-        limit: Maximum number of teams to return
-        current_user_ctx: Current user context with permissions and database session
-
-    Returns:
-        List[TeamDiscoveryResponse]: List of discoverable public teams
-
-    Raises:
-        HTTPException: If there's an error discovering teams
-    """
-    try:
-        db = current_user_ctx["db"]
-        team_service = TeamManagementService(db)
-
-        # Get public teams where user is not already a member
-        public_teams = await team_service.discover_public_teams(current_user_ctx["email"], skip=skip, limit=limit)
-
-        # Batch fetch member counts with caching (N+1 elimination)
-        team_ids = [str(team.id) for team in public_teams]
-        member_counts = await team_service.get_member_counts_batch_cached(team_ids)
-
-        discovery_responses = []
-        for team in public_teams:
-            discovery_responses.append(
-                TeamDiscoveryResponse(
-                    id=team.id,
-                    name=team.name,
-                    description=team.description,
-                    member_count=member_counts.get(str(team.id), 0),
-                    created_at=team.created_at,
-                    is_joinable=True,  # All returned teams are joinable
-                )
-            )
-
-        return discovery_responses
-    except Exception as e:
-        logger.error(f"Error discovering public teams: {e}")
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Failed to discover teams")
 
 
 @teams_router.post("/{team_id}/join", response_model=TeamJoinRequestResponse)
@@ -971,7 +906,6 @@ async def leave_team(
 
 
 @teams_router.get("/{team_id}/join-requests", response_model=List[TeamJoinRequestResponse])
-@require_permission_v2("teams.manage_members")
 async def list_team_join_requests(
     team_id: str,
     current_user: dict = Depends(get_current_user_with_permissions),
@@ -1031,7 +965,6 @@ async def list_team_join_requests(
 
 
 @teams_router.post("/{team_id}/join-requests/{request_id}/approve", response_model=TeamMemberResponse)
-@require_permission_v2("teams.manage_members")
 async def approve_join_request(
     team_id: str,
     request_id: str,
@@ -1090,7 +1023,6 @@ async def approve_join_request(
 
 
 @teams_router.delete("/{team_id}/join-requests/{request_id}", response_model=SuccessResponse)
-@require_permission_v2("teams.manage_members")
 async def reject_join_request(
     team_id: str,
     request_id: str,

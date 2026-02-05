@@ -8,12 +8,14 @@ with a single, configurable policy engine.
 
 # Standard
 from datetime import datetime, timezone
+from functools import wraps
 import logging
 import os
 from typing import Any, Dict, List, Optional
 from uuid import uuid4
 
 # Third-Party
+from fastapi import HTTPException
 from sqlalchemy.orm import Session
 
 # First-Party
@@ -31,6 +33,16 @@ class Subject:
     """Represents the entity requesting access (user, service, token)."""
 
     def __init__(self, email: str, roles: List[str] = None, teams: List[str] = None, is_admin: bool = False, permissions: List[str] = None, attributes: Dict[str, Any] = None):
+        """Initialize a Subject for access control.
+
+        Args:
+            email: User email address
+            roles: List of role names
+            teams: List of team IDs
+            is_admin: Whether user has admin privileges
+            permissions: List of permission strings
+            attributes: Additional subject attributes
+        """
         self.email = email
         self.roles = roles or []
         self.teams = teams or []
@@ -45,6 +57,16 @@ class Resource:
     def __init__(
         self, resource_type: str, resource_id: Optional[str] = None, owner: Optional[str] = None, team_id: Optional[str] = None, visibility: Optional[str] = None, attributes: Dict[str, Any] = None
     ):
+        """Initialize a Resource.
+
+        Args:
+            resource_type: Type of resource (e.g., "tool", "server")
+            resource_id: Unique resource identifier
+            owner: Email of resource owner
+            team_id: ID of owning team
+            visibility: Resource visibility (private/team/public)
+            attributes: Additional resource attributes
+        """
         self.type = resource_type
         self.id = resource_id
         self.owner = owner
@@ -57,6 +79,7 @@ class Context:
     """Ambient request context."""
 
     def __init__(self, ip_address: Optional[str] = None, user_agent: Optional[str] = None, request_id: Optional[str] = None, timestamp: Optional[datetime] = None, attributes: Dict[str, Any] = None):
+        """Initialize a Context."""
         self.ip_address = ip_address
         self.user_agent = user_agent
         self.request_id = request_id
@@ -78,6 +101,18 @@ class AccessDecision:
         matching_policies: List[str] = None,
         decision_id: Optional[str] = None,
     ):
+        """Initialize an AccessDecision.
+
+        Args:
+            allowed: Whether access is granted
+            reason: Explanation for the decision
+            permission: Permission being checked
+            subject_email: Email of requesting subject
+            resource_type: Type of resource accessed
+            resource_id: ID of resource accessed
+            matching_policies: List of policy IDs that matched
+            decision_id: Unique decision identifier
+        """
         self.allowed = allowed
         self.reason = reason
         self.permission = permission
@@ -262,7 +297,6 @@ class PolicyEngine:
             f"allowed={decision.allowed}, "
             f"reason={decision.reason}"
         )
-        # TODO: Write to access_decisions table
 
 
 # ---------------------------------------------------------------------------
@@ -288,14 +322,15 @@ def require_permission_v2(permission: str, resource_type: Optional[str] = None, 
             ...
     """
     # Standard
-    from functools import wraps
 
     # Third-Party
-    from fastapi import HTTPException
 
     def decorator(func):
+        """Decorator for permission enforcement."""
+
         @wraps(func)
         async def wrapper(*args, **kwargs):
+            """Wrapper enforcing permission checks."""
             # TEST MODE: Skip PolicyEngine if flag is set (for backward compatibility)
             if os.getenv("SKIP_POLICY_ENGINE", "false").lower() == "true":
                 return await func(*args, **kwargs)
@@ -334,7 +369,6 @@ def require_permission_v2(permission: str, resource_type: Optional[str] = None, 
             resource = Resource(resource_type=resource_type or permission.split(".")[0], resource_id=None) if resource_type else None  # Not known at decorator time
 
             # Check access (respect allow_admin_bypass parameter)
-            subject.is_admin
             if not allow_admin_bypass:
                 subject.is_admin = False
 
