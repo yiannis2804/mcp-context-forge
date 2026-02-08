@@ -12161,7 +12161,6 @@ async def admin_get_import_status(import_id: str, user=Depends(get_current_user_
     Args:
         import_id: Import operation ID
         user: Authenticated user
-        _db: Database session for permission checks.
 
     Returns:
         JSON response with import status
@@ -12185,7 +12184,6 @@ async def admin_list_import_statuses(user=Depends(get_current_user_with_permissi
 
     Args:
         user: Authenticated user
-        _db: Database session for permission checks.
 
     Returns:
         JSON response with list of import statuses
@@ -14215,7 +14213,6 @@ async def get_observability_partial(request: Request, _user=Depends(get_current_
     Args:
         request: FastAPI request object
         _user: Authenticated user with admin permissions (required by dependency)
-        _db: Database session for permission checks.
 
     Returns:
         HTMLResponse: Rendered observability dashboard template
@@ -14232,7 +14229,6 @@ async def get_observability_metrics_partial(request: Request, _user=Depends(get_
     Args:
         request: FastAPI request object
         _user: Authenticated user with admin permissions (required by dependency)
-        _db: Database session for permission checks.
 
     Returns:
         HTMLResponse: Rendered metrics dashboard template
@@ -14250,7 +14246,6 @@ async def get_observability_stats(request: Request, hours: int = Query(24, ge=1,
         request: FastAPI request object
         hours: Number of hours to look back for statistics (1-168)
         _user: Authenticated user with admin permissions (required by dependency)
-        db: Database session for permission checks.
 
     Returns:
         HTMLResponse: Rendered statistics template with trace counts and averages
@@ -14396,7 +14391,6 @@ async def get_observability_trace_detail(request: Request, trace_id: str, _user=
         request: FastAPI request object
         trace_id: UUID of the trace to retrieve
         _user: Authenticated user with admin permissions (required by dependency)
-        db: Database session for permission checks.
 
     Returns:
         HTMLResponse: Rendered trace detail template with waterfall view
@@ -14484,7 +14478,6 @@ async def list_observability_queries(request: Request, user=Depends(get_current_
     Args:
         request: FastAPI request object
         user: Authenticated user (required by dependency)
-        db: Database session for permission checks.
 
     Returns:
         list: List of saved query dictionaries
@@ -14532,7 +14525,6 @@ async def get_observability_query(request: Request, query_id: int, user=Depends(
         request: FastAPI request object
         query_id: ID of the saved query
         user: Authenticated user (required by dependency)
-        db: Database session for permission checks.
 
     Returns:
         dict: Query details
@@ -14655,7 +14647,6 @@ async def delete_observability_query(request: Request, query_id: int, user=Depen
         request: FastAPI request object
         query_id: ID of the query to delete
         user: Authenticated user (required by dependency)
-        db: Database session for permission checks.
 
     Raises:
         HTTPException: 404 if query not found, 403 if unauthorized
@@ -14689,7 +14680,6 @@ async def track_query_usage(request: Request, query_id: int, user=Depends(get_cu
         request: FastAPI request object
         query_id: ID of the query being used
         user: Authenticated user (required by dependency)
-        db: Database session for permission checks.
 
     Returns:
         dict: Updated query usage stats

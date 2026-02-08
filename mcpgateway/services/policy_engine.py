@@ -79,7 +79,15 @@ class Context:
     """Ambient request context."""
 
     def __init__(self, ip_address: Optional[str] = None, user_agent: Optional[str] = None, request_id: Optional[str] = None, timestamp: Optional[datetime] = None, attributes: Dict[str, Any] = None):
-        """Initialize a Context."""
+        """Initialize a Context.
+
+        Args:
+            ip_address: Client IP address
+            user_agent: Client user agent string
+            request_id: Unique request identifier
+            timestamp: Request timestamp
+            attributes: Additional context attributes
+        """
         self.ip_address = ip_address
         self.user_agent = user_agent
         self.request_id = request_id
@@ -236,6 +244,14 @@ class PolicyEngine:
         """
         Check resource-level access (owner, team membership, visibility).
 
+        Args:
+            subject: The subject requesting access
+            permission: Required permission string
+            resource: The resource being accessed
+
+        Returns:
+            AccessDecision: The access control decision
+
         This replaces the visibility filtering logic in services.
         """
         # Owner always has access
@@ -286,6 +302,9 @@ class PolicyEngine:
         """
         Log the access decision to the audit trail.
 
+        Args:
+            decision: The access decision to log
+
         NOTE: This will write to access_decisions table once we create it.
         For now, just log to console.
         """
@@ -316,6 +335,9 @@ def require_permission_v2(permission: str, resource_type: Optional[str] = None, 
         resource_type: Optional resource type
         allow_admin_bypass: If False, even admins must have explicit permission (default: True)
 
+    Returns:
+        Callable: Decorator that enforces permission checks
+
     Usage:
         @require_permission_v2("servers.read")
         async def list_servers(...):
@@ -326,11 +348,29 @@ def require_permission_v2(permission: str, resource_type: Optional[str] = None, 
     # Third-Party
 
     def decorator(func):
-        """Decorator for permission enforcement."""
+        """Decorate function with permission enforcement.
+
+        Args:
+            func: The function to wrap
+
+        Returns:
+            Callable: The wrapped function
+        """
 
         @wraps(func)
         async def wrapper(*args, **kwargs):
-            """Wrapper enforcing permission checks."""
+            """Enforce permission checks before calling wrapped function.
+
+            Args:
+                *args: Positional arguments passed to wrapped function
+                **kwargs: Keyword arguments passed to wrapped function
+
+            Returns:
+                Any: Result of the wrapped function
+
+            Raises:
+                HTTPException: If authentication or authorization fails
+            """
             # TEST MODE: Skip PolicyEngine if flag is set (for backward compatibility)
             if os.getenv("SKIP_POLICY_ENGINE", "false").lower() == "true":
                 return await func(*args, **kwargs)

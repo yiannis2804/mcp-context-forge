@@ -1041,7 +1041,11 @@ class AccessPermission(Base):
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())  # pylint: disable=not-callable
 
     def __repr__(self):
-        """Return string representation."""
+        """Return string representation.
+
+        Returns:
+            str: String representation
+        """
         return f"<AccessPermission(name={self.name}, resource_type={self.resource_type}, action={self.action})>"
 
 
@@ -1062,7 +1066,11 @@ class AccessPolicy(Base):
     created_by = Column(String(255))
 
     def __repr__(self):
-        """Return string representation."""
+        """Return string representation.
+
+        Returns:
+            str: String representation
+        """
         return f"<AccessPolicy(name={self.name}, effect={self.effect}, priority={self.priority})>"
 
 
@@ -1096,7 +1104,11 @@ class AccessDecisionLog(Base):
     request_id = Column(String(100), index=True)
 
     def __repr__(self):
-        """Return string representation."""
+        """Return string representation.
+
+        Returns:
+            str: String representation
+        """
         return f"<AccessDecisionLog(subject={self.subject_email}, decision={self.decision}, permission={self.permission})>"
 
 
@@ -1118,7 +1130,11 @@ class ResourceAccessRule(Base):
     policy = relationship("AccessPolicy", backref="resource_rules")
 
     def __repr__(self):
-        """Return string representation."""
+        """Return string representation.
+
+        Returns:
+            str: String representation
+        """
         return f"<ResourceAccessRule(resource_type={self.resource_type}, resource_id={self.resource_id})>"
 
 
@@ -5268,7 +5284,11 @@ class SSOProvider(Base):
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utc_now, onupdate=utc_now, nullable=False)
 
     def __repr__(self):
-        """Return string representation."""
+        """Return string representation.
+
+        Returns:
+            str: String representation
+        """
         return f"<SSOProvider(id='{self.id}', name='{self.name}', enabled={self.is_enabled})>"
 
 
@@ -5339,7 +5359,11 @@ class SSOAuthSession(Base):
         return now > expires
 
     def __repr__(self):
-        """Return string representation."""
+        """Return string representation.
+
+        Returns:
+            str: String representation
+        """
         return f"<SSOAuthSession(id='{self.id}', provider='{self.provider_id}', expired={self.is_expired})>"
 
 
