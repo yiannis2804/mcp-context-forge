@@ -561,6 +561,7 @@ async def list_all_auth_events(limit: int = 100, offset: int = 0, user_email: Op
         logger.error(f"Error getting auth events: {e}")
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Failed to retrieve authentication events")
 
+
 @email_auth_router.post("/admin/users", response_model=EmailUserResponse, status_code=status.HTTP_201_CREATED)
 @require_permission_v2("admin.user_management")
 async def create_user(user_request: AdminCreateUserRequest, current_user_ctx: dict = Depends(get_current_user_with_permissions), db: Session = Depends(get_db)):
@@ -663,6 +664,7 @@ async def get_user(user_email: str, current_user_ctx: dict = Depends(get_current
 @require_permission_v2("admin.user_management")
 async def update_user(user_email: str, user_request: AdminUserUpdateRequest, current_user_ctx: dict = Depends(get_current_user_with_permissions), db: Session = Depends(get_db)):
     """Update user information (admin only).
+
     Args:
         user_email: Email of user to update
         user_request: Updated user information
