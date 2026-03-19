@@ -6598,3 +6598,108 @@ def set_prompt_name_and_slug(mapper, connection, target):  # pylint: disable=unu
         target.name = f"{gateway_slug}{sep}{target.custom_name_slug}"
     else:
         target.name = target.custom_name_slug
+
+
+# ---------------------------------------------------------------------------
+# Policy GitOps Models
+# ---------------------------------------------------------------------------
+
+class PolicyVersion(Base):
+    """Versioned policy content with full audit metadata.
+
+    Stores each version of a policy with its content hash for deduplication,
+    Git provenance, and active/inactive state per environment.
+
+    Attributes:
+        id: Unique version identifier (UUID).
+        policy_name: Logical name of the policy (e.g. 'tool-access-control').
+        version: Auto-incremented version tag (e.g. 'v1', 'v2').
+        content: Raw policy content (Cedar or Rego).
+        content_hash: SHA-256 hash of content for deduplication.
+        engine: Policy engine ('cedar' or 'opa').
+        author: Email of the author who created this version.
+        commit_sha: Optional Git commit SHA.
+        commit_message: Optional Git commit message.
+        change_summary: Optional human-readable summary of changes.
+        environment: Target environment ('dev', 'staging', 'prod').
+        is_active: Whether this is the currently active version.
+        created_at: When this version was stored.
+    """
+
+    __tablename__ = "policy_versions"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    policy_name: Mapped[str] = mapped_column(String(255), nullable=False, index=True)
+    version: Mapped[str] = mapped_column(String(50), nullable=False)
+    content: Mapped[str] = mapped_column(Text, nullable=False)
+    content_hash: Mapped[str] = mapped_column(String(64), nullable=False, index=True)
+    engine: Mapped[str] = mapped_column(String(50), nullable=False)
+    author: Mapped[str] = mapped_column(String(255), nullable=False)
+    commit_sha: Mapped[Optional[str]] = mapped_column(String(40), nullable=True)
+    commit_message: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    change_summary: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    environment: Mapped[str] = mapped_column(String(50), nullable=False, index=True)
+    is_active: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False, index=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=utc_now)
+
+    __table_args__ = (UniqueConstraint("policy_name", "version", "environment", name="uq_policy_version_env"),)
+
+    # Relationships
+    deployments: Mapped[List["PolicyDeployment"]] = relationship("PolicyDeployment", back_populates="version", cascade="all, delete-orphan")
+    approvals: Mapped[List["PolicyApproval"]] = relationship("PolicyApproval", back_populates="version", cascade="all, delete-orphan")
+
+
+class PolicyDeployment(Base):
+    """Record of a policy deployment, rollback, or promotion event.
+
+    Attributes:
+        id: Unique deployment identifier (UUID).
+        policy_version_id: FK to the policy version deployed.
+        environment: Target environment for this deployment.
+        deployed_by: Email of the user who triggered the deployment.
+        deployment_type: Type of deployment ('push', 'rollback', 'promotion').
+        status: Outcome ('success', 'failed').
+        notes: Optional notes or rollback reason.
+        deployed_at: When the deployment occurred.
+    """
+
+    __tablename__ = "policy_deployments"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    policy_version_id: Mapped[str] = mapped_column(String(36), ForeignKey("policy_versions.id"), nullable=False)
+    environment: Mapped[str] = mapped_column(String(50), nullable=False, index=True)
+    deployed_by: Mapped[str] = mapped_column(String(255), nullable=False)
+    deployment_type: Mapped[str] = mapped_column(String(50), nullable=False)
+    status: Mapped[str] = mapped_column(String(50), nullable=False, default="success")
+    notes: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    deployed_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=utc_now)
+
+    version: Mapped["PolicyVersion"] = relationship("PolicyVersion", back_populates="deployments")
+
+
+class PolicyApproval(Base):
+    """Approval request for a policy version before production deployment.
+
+    Attributes:
+        id: Unique approval identifier (UUID).
+        policy_version_id: FK to the policy version requiring approval.
+        requested_by: Email of the requester.
+        approved_by: Email of the approver (set on resolution).
+        status: Workflow status ('pending', 'approved', 'rejected').
+        comments: Optional comments from requester or approver.
+        requested_at: When the approval was requested.
+        resolved_at: When the approval was resolved.
+    """
+
+    __tablename__ = "policy_approvals"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    policy_version_id: Mapped[str] = mapped_column(String(36), ForeignKey("policy_versions.id"), nullable=False)
+    requested_by: Mapped[str] = mapped_column(String(255), nullable=False)
+    approved_by: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+    status: Mapped[str] = mapped_column(String(50), nullable=False, default="pending", index=True)
+    comments: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    requested_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=utc_now)
+    resolved_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
+
+    version: Mapped["PolicyVersion"] = relationship("PolicyVersion", back_populates="approvals")

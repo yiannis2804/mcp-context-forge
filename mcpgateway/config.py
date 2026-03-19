@@ -709,6 +709,11 @@ class Settings(BaseSettings):
     mcpgateway_sandbox_regression_enabled: bool = Field(default=True, description="Enable regression testing against historical decisions")
     mcpgateway_sandbox_regression_replay_last_days: int = Field(default=7, ge=1, le=365, description="Number of days of historical decisions to replay")
     mcpgateway_sandbox_regression_sample_size: int = Field(default=1000, ge=1, le=100000, description="Maximum historical decisions to sample for regression")
+    gitops_enabled: bool = Field(default=True, description="Enable the Policy GitOps feature")
+    gitops_webhook_secret: str = Field(default="", description="HMAC secret for validating Git webhook signatures")
+    gitops_require_approval_for_prod: bool = Field(default=True, description="Require approval before promoting policies to prod")
+    gitops_min_approvals: int = Field(default=1, ge=1, le=10, description="Minimum number of approvals required for prod deployment")
+    gitops_retention_days: int = Field(default=90, ge=1, le=3650, description="Number of days to retain policy version history")
 
     # Security
     skip_ssl_verify: bool = Field(

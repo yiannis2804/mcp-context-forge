@@ -8225,3 +8225,114 @@ class RegressionTestRequest(BaseModel):
     sample_size: Optional[int] = Field(default=1000, description="Maximum number of decisions to replay")
     filter_by_subject: Optional[str] = Field(None, description="Only replay decisions for specific subject")
     filter_by_action: Optional[str] = Field(None, description="Only replay specific action types")
+
+
+# ---------------------------------------------------------------------------
+# Policy GitOps Schemas
+# ---------------------------------------------------------------------------
+
+from pydantic import BaseModel, Field
+from typing import Any, Dict, List, Optional
+from datetime import datetime
+
+
+class PolicyVersionResponse(BaseModel):
+    """Response schema for a policy version."""
+    id: str
+    policy_name: str
+    version: str
+    content: str
+    content_hash: str
+    engine: str
+    author: str
+    commit_sha: Optional[str] = None
+    commit_message: Optional[str] = None
+    change_summary: Optional[str] = None
+    environment: str
+    is_active: bool
+    created_at: datetime
+
+    model_config = {"from_attributes": True}
+
+
+class PolicyDeploymentResponse(BaseModel):
+    """Response schema for a policy deployment record."""
+    id: str
+    policy_version_id: str
+    environment: str
+    deployed_by: str
+    deployment_type: str
+    status: str
+    notes: Optional[str] = None
+    deployed_at: datetime
+
+    model_config = {"from_attributes": True}
+
+
+class PolicyApprovalResponse(BaseModel):
+    """Response schema for a policy approval request."""
+    id: str
+    policy_version_id: str
+    requested_by: str
+    approved_by: Optional[str] = None
+    status: str
+    comments: Optional[str] = None
+    requested_at: datetime
+    resolved_at: Optional[datetime] = None
+
+    model_config = {"from_attributes": True}
+
+
+class PolicyDiffResponse(BaseModel):
+    """Response schema for a policy diff."""
+    policy_name: str
+    version_a: str
+    version_b: str
+    environment: str
+    added_lines: int
+    removed_lines: int
+    added: List[str]
+    removed: List[str]
+
+
+class StoreVersionRequest(BaseModel):
+    """Request body for storing a new policy version."""
+    policy_name: str = Field(..., min_length=1, max_length=255)
+    content: str = Field(..., min_length=1)
+    engine: str = Field(..., pattern="^(cedar|opa)$")
+    environment: str = Field(..., pattern="^(dev|staging|prod)$")
+    commit_sha: Optional[str] = Field(None, max_length=40)
+    commit_message: Optional[str] = None
+    change_summary: Optional[str] = None
+
+
+class RollbackRequest(BaseModel):
+    """Request body for rolling back a policy."""
+    target_version_id: str = Field(..., min_length=1)
+    reason: str = Field(..., min_length=1)
+
+
+class PromoteRequest(BaseModel):
+    """Request body for promoting a policy between environments."""
+    from_env: str = Field(..., pattern="^(dev|staging|prod)$")
+    to_env: str = Field(..., pattern="^(dev|staging|prod)$")
+
+
+class WebhookPayload(BaseModel):
+    """Git push webhook payload."""
+    ref: str = Field(..., description="Git ref e.g. refs/heads/main")
+    commits: List[Dict[str, Any]] = Field(default_factory=list)
+    pusher: Optional[Dict[str, Any]] = None
+    repository: Optional[Dict[str, Any]] = None
+
+
+class ApprovalRequest(BaseModel):
+    """Request body for creating an approval request."""
+    policy_version_id: str = Field(..., min_length=1)
+    comments: Optional[str] = None
+
+
+class ResolveApprovalRequest(BaseModel):
+    """Request body for resolving an approval."""
+    decision: str = Field(..., pattern="^(approved|rejected)$")
+    comments: Optional[str] = None
