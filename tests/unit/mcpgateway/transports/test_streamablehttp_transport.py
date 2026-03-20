@@ -7258,6 +7258,8 @@ async def test_send_with_capture_str_headers_and_non_matching_header(monkeypatch
 @pytest.mark.asyncio
 async def test_send_with_capture_registration_failure_logged(monkeypatch, caplog):
     """Test registration failure is logged but doesn't break request (lines 1667-1669)."""
+    import logging
+    caplog.set_level(logging.DEBUG, logger="mcpgateway.transports.streamablehttp_transport")
 
     class DummySessionManager:
         @asynccontextmanager

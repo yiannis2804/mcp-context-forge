@@ -88,6 +88,8 @@ class TestNoneBackend:
     @pytest.mark.asyncio
     async def test_none_backend_initialization_logging(self, caplog):
         """Test that 'none' backend logs initialization message."""
+        import logging
+        caplog.set_level(logging.DEBUG, logger="mcpgateway.cache.session_registry")
         _ = SessionRegistry(backend="none")
 
         # Check that initialization message is logged
@@ -396,6 +398,8 @@ class TestDatabaseBackendRespond:
     @pytest.mark.asyncio
     async def test_database_respond_ready_to_respond_logging(self, monkeypatch, caplog, mock_sse_transport):
         """Test database respond logs 'Ready to respond'."""
+        import logging
+        caplog.set_level(logging.DEBUG, logger="mcpgateway.cache.session_registry")
         call_count = 0
 
         def mock_get_db():
@@ -458,6 +462,8 @@ class TestDatabaseBackendRespond:
     ):
         """Test database message removal logs correctly."""
 
+        import logging
+        caplog.set_level(logging.DEBUG, logger="mcpgateway.cache.session_registry")
         call_count = 0
 
         def mock_get_db():
@@ -521,6 +527,8 @@ class TestDatabaseCleanupTask:
     @pytest.mark.asyncio
     async def test_db_cleanup_task_expired_sessions(self, monkeypatch, caplog, mock_sse_transport):
         """Test database cleanup task removes expired sessions."""
+        import logging
+        caplog.set_level(logging.DEBUG, logger="mcpgateway.cache.session_registry")
         mock_db_session = Mock()
         cleanup_call_count = 0
 
@@ -867,6 +875,8 @@ class TestInitializationAndShutdown:
     @pytest.mark.asyncio
     async def test_memory_backend_initialization_logging(self, caplog):
         """Test memory backend initialization creates cleanup task."""
+        import logging
+        caplog.set_level(logging.DEBUG, logger="mcpgateway.cache.session_registry")
         registry = SessionRegistry(backend="memory")
         await registry.initialize()
 
@@ -885,6 +895,8 @@ class TestInitializationAndShutdown:
     @pytest.mark.asyncio
     async def test_database_backend_initialization_logging(self, caplog):
         """Test database backend initialization creates cleanup task."""
+        import logging
+        caplog.set_level(logging.DEBUG, logger="mcpgateway.cache.session_registry")
         with patch("mcpgateway.cache.session_registry.SQLALCHEMY_AVAILABLE", True):
             registry = SessionRegistry(backend="database", database_url="sqlite:///test.db")
             await registry.initialize()
