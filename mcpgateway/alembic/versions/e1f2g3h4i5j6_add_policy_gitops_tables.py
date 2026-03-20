@@ -12,7 +12,7 @@ from alembic import op
 
 # revision identifiers, used by Alembic.
 revision: str = "e1f2g3h4i5j6"
-down_revision: str = "abf8ac3b6008"
+down_revision = ("abf8ac3b6008", "d2d3d4d5d6d7")
 branch_labels = None
 depends_on = None
 
