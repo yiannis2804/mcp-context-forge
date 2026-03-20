@@ -8231,10 +8231,6 @@ class RegressionTestRequest(BaseModel):
 # Policy GitOps Schemas
 # ---------------------------------------------------------------------------
 
-from pydantic import BaseModel, Field
-from typing import Any, Dict, List, Optional
-from datetime import datetime
-
 
 class PolicyVersionResponse(BaseModel):
     """Response schema for a policy version."""

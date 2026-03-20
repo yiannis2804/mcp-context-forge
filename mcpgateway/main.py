@@ -10778,14 +10778,14 @@ if ADMIN_API_ENABLED:
     logger.info("Including admin_router - Admin API enabled")
     if settings.mcpgateway_sandbox_enabled:
         app.include_router(sandbox_router, prefix="/api/sandbox", tags=["Sandbox"])
+        logger.info("Sandbox router mounted at /api/sandbox")
+    else:
+        logger.info("Sandbox feature disabled via MCPGATEWAY_SANDBOX_ENABLED=false")
     if settings.gitops_enabled:
         app.include_router(gitops_router, prefix="/api", tags=["Policy GitOps"])
         logger.info("GitOps router mounted at /api/gitops")
     else:
         logger.info("GitOps feature disabled via GITOPS_ENABLED=false")
-        logger.info("Sandbox router mounted at /api/sandbox")
-    else:
-        logger.info("Sandbox feature disabled via MCPGATEWAY_SANDBOX_ENABLED=false")
     app.include_router(admin_router)  # Admin routes imported from admin.py
 else:
     logger.warning("Admin API routes not mounted - Admin API disabled via MCPGATEWAY_ADMIN_API_ENABLED=False")
